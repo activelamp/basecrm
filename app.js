@@ -7,6 +7,14 @@ function BaseCRM(token) {
   this.token = token;
 }
 
+function findContact(number, token) {
+  return makeRequest(number, 'contacts', token);
+}
+
+function findLead(number, token) {
+  return makeRequest(number, 'leads', token);
+}
+
 function makeRequest(number, type, token) {
   var d = deferred();
   var req = request.get('https://api.getbase.com/v2/' + type + '?mobile=' + number, {
@@ -18,10 +26,7 @@ function makeRequest(number, type, token) {
   }, 
   function(err, res, body) {
     if (JSON.parse(body).items.length < 1) {
-      var lead = makeRequest(number, 'leads', token);
-      lead(function(value) {
-        d.resolve({res: value.res, body: value.body});
-      });
+      d.reject(err);
     }
     else {
       if (d) return err ? d.reject(err) : d.resolve({res: res, body: body});
@@ -32,7 +37,12 @@ function makeRequest(number, type, token) {
 }
 
 BaseCRM.prototype.findByPhone = function (number, type) {
-  return makeRequest(number, type, this.token);
+  var token = this.token;
+  return findContact(number, token).then(function (obj) {
+    return obj;
+  }, function () {
+    return findLead(number, token)
+  });
 }
 
 module.exports = BaseCRM;
