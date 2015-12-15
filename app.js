@@ -36,7 +36,7 @@ function makeRequest(number, type, token) {
   return d ? d.promise : req;
 }
 
-BaseCRM.prototype.findByPhone = function (number, type) {
+BaseCRM.prototype.findByPhone = function (number) {
   var token = this.token;
   return findContact(number, token).then(function (obj) {
     return obj;
